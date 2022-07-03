@@ -1,0 +1,4 @@
+/.env
+/certs
+/manifest-docker-install.ps1
+/uploads
