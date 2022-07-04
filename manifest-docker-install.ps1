@@ -11,6 +11,7 @@ $REGISTRY_PASSWORD
 
 $Enviroment
 
+## Downloads the latest docker-compose file
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/matt953/Windows-Docker/master/docker-compose.yml" -outfile "docker-compose.yml"
 
 ## Creates .env file which is populated by this script and the values are then used when running docker-compose up
