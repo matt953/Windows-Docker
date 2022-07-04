@@ -1,0 +1,96 @@
+version: "3.9"
+volumes:
+  manifest_postgres:
+  redis_data:
+  shared:
+services:
+  api:
+    image: taqtile.azurecr.io/manifest-api-production-2.5:5697746c9
+    depends_on:
+      - dbpostgres
+    ports:
+      - "3000"
+      - "4000"
+    expose:
+      - "3000"
+      - "4000"
+    links:
+      - dbpostgres
+    volumes:
+      - ${FILE_PATH}/uploads:/uploads
+      - shared:/shared
+    environment:
+      DATABASESERVER_PORT: "5432"
+      DATABASESERVER_HOST: "dbpostgres"
+      NODE_ENV: ${NODE_ENV}
+      IP_ACCESS: ${IP_ACCESS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      env: "on-prem"
+      LICENSE_KEY: ${LICENSE_KEY}
+  dbpostgres:
+    image: taqtile.azurecr.io/manifest-db-11
+    volumes:
+      - manifest_postgres:/var/lib/postgresql/data
+    ports:
+      - "5432"
+    environment:
+      - POSTGRES_USER=manifest
+      - POSTGRES_PASSWORD=dnhrfw2ufbbto3!mritbfwl
+      - POSTGRES_DB=manifestmain
+  web:
+    image: taqtile.azurecr.io/manifest-web-production-2.5:4ebf837dc
+    depends_on:
+      - api
+    volumes:
+      - ${FILE_PATH}/uploads:/usr/share/nginx/html/uploads
+      - ${FILE_PATH}/certs:/etc/ssl/private/
+      - ${FILE_PATH}/certs:/etc/ssl/certs
+      - shared:/shared
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NGINX_HOST=${NODE_ENV}
+      - NGINX_PORT=80
+      - IP_ACCESS=${IP_ACCESS}
+      - env=on-prem
+    links:
+      - api
+    restart: on-failure
+
+  manifestCoturn:
+    image: taqtile.azurecr.io/manifest-coturn
+    network_mode: "host"
+  converter:
+    image: taqtile.azurecr.io/manifest-3dconverter:latest
+    volumes:
+      - ${FILE_PATH}/uploads:/manifest-cs/folder
+    ports:
+      - "5555"
+    expose:
+      - "5555"
+    restart: on-failure
+  videoEditor:
+    image: taqtile.azurecr.io/video_editor_image:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 6000M
+    volumes:
+      - ${FILE_PATH}/uploads:/VideoEditor/uploads/
+    ports:
+      - "7172"
+    expose:
+      - "7172"
+    restart: on-failure
+  redis:
+    image: docker.io/bitnami/redis:6.2
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis_data:/bitnami/redis/data'

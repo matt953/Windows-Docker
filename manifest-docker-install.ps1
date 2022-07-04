@@ -27,8 +27,8 @@ if(!(Test-Path -Path 'uploads' )){
 ## Gets the Users input to fill the required variables
 $LICENSE_KEY = Read-Host -Prompt 'Input your Licence Key'
 $REGISTRY_PASSWORD = Read-Host -Prompt 'Input the docker password you were provided by Taqtile'
-$ADMIN_EMAIL = Read-Host -Prompt 'Input your new Manifest Admin Account Email'
-$ADMIN_PASSWORD = Read-Host -Prompt 'Input your new Manifest Admin Account Password'
+$ADMIN_EMAIL = Read-Host -Prompt 'Input your Manifest Admin Account Email'
+$ADMIN_PASSWORD = Read-Host -Prompt 'Input your Manifest Admin Account Password'
 $IP_ACCESS = Read-Host -Prompt 'Input your IP Address: e.g 20.70.192.221 HINT: use command ipconfig in a seperate powershell terminal to obtain IP Address'
 
 
