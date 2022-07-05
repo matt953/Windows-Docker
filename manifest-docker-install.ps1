@@ -81,6 +81,20 @@ docker login taqtile.azurecr.io -u taqtile -p $REGISTRY_PASSWORD
 Write-Host "Starting Manifest Instance using docker...    This may take a while" 
 docker-compose up -d
 
+Write-Host "Please wait..." 
+Write-Host "Please wait..." 
+
+## Waits for Manifest containers to fully start
+Start-Sleep -Seconds 30
+
+## Opens Browser to the Manifest Client Portal
+if ($NODE_ENV -eq "localhost") {
+    Start-Process "https:/localhost"
+} else {
+    Start-Process "https:/${$NODE_ENV}"
+}
+
+
 
 
 
