@@ -85,7 +85,7 @@ Write-Host "Please wait..."
 Write-Host "Please wait..." 
 
 ## Waits for Manifest containers to fully start
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 20
 
 ## Opens Browser to the Manifest Client Portal
 if ($NODE_ENV -eq "localhost") {
