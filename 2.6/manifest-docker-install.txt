@@ -1,0 +1,101 @@
+## Get current directory
+$FILE_PATH = $PSScriptRoot
+
+## Declare Docker variables
+$NODE_ENV
+$IP_ACCESS
+$ADMIN_EMAIL
+$ADMIN_PASSWORD
+$LICENSE_KEY
+$REGISTRY_PASSWORD
+
+$Enviroment
+
+## Downloads the latest docker-compose file
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/matt953/Windows-Docker/master/docker-compose.yml" -outfile "docker-compose.yml"
+
+## Creates .env file which is populated by this script and the values are then used when running docker-compose up
+New-Item -Path '.env' -Force
+
+if(!(Test-Path -Path 'certs' )){
+    New-Item -Path 'certs' -itemType Directory
+}
+
+if(!(Test-Path -Path 'uploads' )){
+    New-Item -Path 'uploads' -itemType Directory
+}
+
+## Gets the Users input to fill the required variables
+$LICENSE_KEY = Read-Host -Prompt 'Input your Licence Key'
+$REGISTRY_PASSWORD = Read-Host -Prompt 'Input the docker password you were provided by Taqtile'
+$ADMIN_EMAIL = Read-Host -Prompt 'Input your Manifest Admin Account Email'
+$ADMIN_PASSWORD = Read-Host -Prompt 'Input your Manifest Admin Account Password'
+$IP_ACCESS = Read-Host -Prompt 'Input your IP Address: e.g 20.70.192.221 HINT: use command ipconfig in a seperate powershell terminal to obtain IP Address'
+
+
+## Checks what enviroment the manifest instance will be running in
+$Enviroment = Read-Host -Prompt 'Are you running in a localhost enviroment? Type YES or NO, If unsure type YES.'
+
+## Flag variable for validating user input
+$FLAG = $false
+
+if ($Enviroment -eq "NO") {
+    $NODE_ENV = Read-Host -Prompt 'Input your Instance URl: e.g "apac.taqmanifest.com'
+    $FLAG = $true
+} 
+
+if ($Enviroment -eq "YES") {
+    $NODE_ENV = "localhost"
+    $FLAG = $true
+}
+
+## Loops until the correct input is provided
+while ($FLAG -eq $false) {
+    Write-Host "Incorrect Input!" 
+    $Enviroment = Read-Host -Prompt 'Type YES or NO'
+
+    if ($Enviroment -eq "NO") {
+        $NODE_ENV = Read-Host -Prompt 'Input your Instance URl: e.g "apac.taqmanifest.com'
+        $FLAG = $true
+    } 
+    
+    if ($Enviroment -eq "YES") {
+        $NODE_ENV = "localhost"
+        $FLAG = $true
+    }
+}
+
+## Adds variables to the .env file
+Add-Content .env "LICENSE_KEY=$LICENSE_KEY"
+Add-Content .env "ADMIN_EMAIL=$ADMIN_EMAIL"
+Add-Content .env "ADMIN_PASSWORD=$ADMIN_PASSWORD"
+Add-Content .env "IP_ACCESS=$IP_ACCESS"
+Add-Content .env "NODE_ENV=$NODE_ENV"
+Add-Content .env "FILE_PATH=$FILE_PATH"
+
+## Logs in to Docker container registry using the provided password
+Write-Host "Logging into Container registry..." 
+docker login taqtile.azurecr.io -u taqtile -p $REGISTRY_PASSWORD
+
+## Starts Manifest Instance
+Write-Host "Starting Manifest Instance using docker...    This may take a while" 
+docker-compose up -d
+
+Write-Host "Please wait..." 
+Write-Host "Please wait..." 
+
+## Waits for Manifest containers to fully start
+Start-Sleep -Seconds 10
+
+## Opens Browser to the Manifest Client Portal
+if ($NODE_ENV -eq "localhost") {
+    Start-Process "https:/localhost"
+} else {
+    Start-Process "https:/${$NODE_ENV}"
+}
+
+
+
+
+
+
